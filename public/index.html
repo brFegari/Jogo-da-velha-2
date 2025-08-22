@@ -11,6 +11,8 @@
   <div class="page">
     <header class="topbar">
       <h1>Jogo da Velha</h1>
+      <!-- botão para celulares: mostra/oculta o histórico -->
+      <button id="toggleSidebarBtn" class="toggle-sidebar" aria-label="Mostrar histórico">☰</button>
     </header>
 
     <main class="center-area">
@@ -25,10 +27,10 @@
           <p id="status">Conectando...</p>
         </div>
 
-        <div id="board" class="board"></div>
+        <div id="board" class="board" aria-label="Tabuleiro do jogo"></div>
       </section>
 
-      <aside class="sidebar card">
+      <aside id="sidebar" class="sidebar card" aria-hidden="false">
         <h2>Histórico</h2>
         <div class="scores">
           <div id="scoreX">X: 0 vitórias</div>
