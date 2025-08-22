@@ -5,8 +5,9 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
+app.use(express.static("public"));
 
-const socket = io();
+
 let player = null;
 let scores = { X: 0, O: 0, draw: 0 };
 
@@ -169,4 +170,5 @@ io.on("connection", (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
+
 });
