@@ -8,37 +8,43 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <main>
+  <div class="page">
+    <header class="topbar">
       <h1>Jogo da Velha</h1>
+    </header>
 
-      <div id="login" class="card">
-        <input id="nameInput" type="text" placeholder="Digite seu nome" />
-        <button id="joinBtn">Entrar</button>
-      </div>
+    <main class="center-area">
+      <section class="game-area card">
+        <div id="login" class="login-row">
+          <input id="nameInput" type="text" placeholder="Digite seu nome" />
+          <button id="joinBtn">Entrar</button>
+        </div>
 
-      <p id="players">Aguardando jogadores...</p>
-      <p id="status">Conectando...</p>
+        <div id="info-row" class="info-row">
+          <p id="players">Aguardando jogadores...</p>
+          <p id="status">Conectando...</p>
+        </div>
 
-      <div id="board" class="board"></div>
+        <div id="board" class="board"></div>
+      </section>
+
+      <aside class="sidebar card">
+        <h2>Histórico</h2>
+        <div class="scores">
+          <div id="scoreX">X: 0 vitórias</div>
+          <div id="scoreO">O: 0 vitórias</div>
+          <div id="scoreDraw">Empates: 0</div>
+        </div>
+
+        <button id="resetBtn" class="btn">🔄 Reiniciar</button>
+
+        <h3>Jogadores</h3>
+        <ul id="playerList" class="players-list"></ul>
+      </aside>
     </main>
 
-    <aside id="sidebar" class="card">
-      <h2>Histórico</h2>
-      <div class="scores">
-        <div id="scoreX">X: 0 vitórias</div>
-        <div id="scoreO">O: 0 vitórias</div>
-        <div id="scoreDraw">Empates: 0</div>
-      </div>
-
-      <button id="resetBtn" class="btn">🔄 Reiniciar</button>
-
-      <h3>Jogadores</h3>
-      <ul id="playerList" class="players-list"></ul>
-    </aside>
+    <footer class="footer">Feito com ❤️ — multiplayer simples</footer>
   </div>
-
-  <footer>Feito com ❤️ — multiplayer simples</footer>
 
   <script src="script.js"></script>
 </body>
