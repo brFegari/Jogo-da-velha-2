@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Jogo da Velha Multiplayer</title>
   <script src="/socket.io/socket.io.js"></script>
   <link rel="stylesheet" href="style.css">
@@ -10,26 +11,35 @@
   <div class="container">
     <main>
       <h1>Jogo da Velha</h1>
-      <div id="login">
-        <input type="text" id="nameInput" placeholder="Digite seu nome">
+
+      <div id="login" class="card">
+        <input id="nameInput" type="text" placeholder="Digite seu nome" />
         <button id="joinBtn">Entrar</button>
       </div>
+
       <p id="players">Aguardando jogadores...</p>
       <p id="status">Conectando...</p>
-      <div id="board"></div>
+
+      <div id="board" class="board"></div>
     </main>
 
-    <aside id="sidebar">
+    <aside id="sidebar" class="card">
       <h2>Histórico</h2>
-      <p id="scoreX">X: 0 vitórias</p>
-      <p id="scoreO">O: 0 vitórias</p>
-      <p id="scoreDraw">Empates: 0</p>
-      <button id="resetBtn">🔄 Reiniciar</button>
+      <div class="scores">
+        <div id="scoreX">X: 0 vitórias</div>
+        <div id="scoreO">O: 0 vitórias</div>
+        <div id="scoreDraw">Empates: 0</div>
+      </div>
+
+      <button id="resetBtn" class="btn">🔄 Reiniciar</button>
+
       <h3>Jogadores</h3>
-      <ul id="playerList"></ul>
+      <ul id="playerList" class="players-list"></ul>
     </aside>
   </div>
-  <footer>Feito com ❤️ para jogar com amigos</footer>
+
+  <footer>Feito com ❤️ — multiplayer simples</footer>
+
   <script src="script.js"></script>
 </body>
 </html>
