@@ -1,110 +1,54 @@
+// server.js — servidor Node + Socket.IO (BACKEND)
+// Cole este conteúdo inteiro no seu arquivo server.js (substitua o que houver lá).
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
 
+// Serve arquivos estáticos da pasta "public"
 app.use(express.static("public"));
+
+// Inicializa Socket.IO ligado ao servidor HTTP
+const io = new Server(server);
 
 let board = Array(9).fill(null);
 let players = {}; // { socketId: { name, symbol } }
 let currentTurn = "X";
 let scores = { X: 0, O: 0, draw: 0 };
 
-
 io.on("connection", (socket) => {
   console.log("Novo usuário conectado:", socket.id);
 
-let player = null;
-let scores = { X: 0, O: 0, draw: 0 };
-
-const boardDiv = document.getElementById("board");
-const status = document.getElementById("status");
-const playersDiv = document.getElementById("players");
-const resetBtn = document.getElementById("resetBtn");
-const playerList = document.getElementById("playerList");
-
-const loginDiv = document.getElementById("login");
-const nameInput = document.getElementById("nameInput");
-const joinBtn = document.getElementById("joinBtn");
-
-joinBtn.onclick = () => {
-  const name = nameInput.value.trim();
-  if (name) {
-    socket.emit("setName", name);
-    loginDiv.style.display = "none";
-  }
-};
-
-// Criar células do tabuleiro
-for (let i = 0; i < 9; i++) {
-  const cell = document.createElement("div");
-  cell.classList.add("cell");
-  cell.dataset.index = i;
-  cell.onclick = () => socket.emit("move", i);
-  boardDiv.appendChild(cell);
-}
-
-resetBtn.onclick = () => socket.emit("reset");
-
-socket.on("player", ({ symbol, name }) => {
-  player = symbol;
-  playersDiv.innerText = `Você é ${name} (${symbol})`;
-});
-
-socket.on("spectator", ({ name }) => {
-  playersDiv.innerText = `Você entrou como espectador (${name})`;
-});
-
-socket.on("updatePlayers", (players) => {
-  playerList.innerHTML = "";
-  Object.values(players).forEach(p => {
-    const li = document.createElement("li");
-    li.textContent = p.symbol ? `${p.name} (${p.symbol})` : `${p.name} (👀 espectador)`;
-    playerList.appendChild(li);
-  });
-});
-
-socket.on("update", ({ board, currentTurn, winner, scores: newScores }) => {
-  document.querySelectorAll(".cell").forEach((c, i) => {
-    c.innerText = board[i] || "";
-  });
-
-  if (newScores) scores = newScores;
-
-  if (winner) {
-    if (winner === "draw") {
-      status.innerText = "Empate!";
-    } else {
-      status.innerText = `${winner.player} venceu!`;
-    }
-  } else {
-    status.innerText = "Vez do jogador " + currentTurn;
-  }
-
-  document.getElementById("scoreX").innerText = `X: ${scores.X} vitórias`;
-  document.getElementById("scoreO").innerText = `O: ${scores.O} vitórias`;
-  document.getElementById("scoreDraw").innerText = `Empates: ${scores.draw}`;
-});
-
+  // Cliente envia nome para entrar (player ou espectador)
   socket.on("setName", (name) => {
-    if (Object.values(players).filter(p => p.symbol).length < 2) {
+    // número de players com símbolo não-nulo
+    const activeCount = Object.values(players).filter(p => p.symbol).length;
+
+    if (activeCount < 2) {
       const used = Object.values(players).map(p => p.symbol);
-      let symbol = !used.includes("X") ? "X" : "O";
+      const symbol = !used.includes("X") ? "X" : "O";
       players[socket.id] = { name, symbol };
       socket.emit("player", { symbol, name });
+      console.log(`Atribuído ${symbol} a ${name}`);
     } else {
       players[socket.id] = { name, symbol: null };
       socket.emit("spectator", { name });
+      console.log(`${name} entrou como espectador`);
     }
+
     io.emit("updatePlayers", players);
     socket.emit("update", { board, currentTurn, scores });
   });
 
+  // Jogada
   socket.on("move", (index) => {
-    if (players[socket.id] && players[socket.id].symbol === currentTurn && !board[index]) {
+    if (!players[socket.id]) return; // quem não tem nome não joga
+    const playerObj = players[socket.id];
+
+    if (playerObj.symbol === currentTurn && !board[index]) {
       board[index] = currentTurn;
 
       const combos = [
@@ -114,27 +58,28 @@ socket.on("update", ({ board, currentTurn, winner, scores: newScores }) => {
       ];
 
       let winner = null;
-      for (let combo of combos) {
+      for (const combo of combos) {
         const [a,b,c] = combo;
         if (board[a] && board[a] === board[b] && board[a] === board[c]) {
           winner = { player: board[a], combo };
-          scores[winner.player]++;
+          scores[winner.player] = (scores[winner.player] || 0) + 1;
           break;
         }
       }
 
       if (!winner && board.every(cell => cell)) {
         winner = "draw";
-        scores.draw++;
+        scores.draw = (scores.draw || 0) + 1;
       }
 
       if (winner) {
         io.emit("update", { board, currentTurn, winner, scores });
+        // reinicia board após 1.8s (visual)
         setTimeout(() => {
           board = Array(9).fill(null);
           currentTurn = "X";
           io.emit("update", { board, currentTurn, scores });
-        }, 2000);
+        }, 1800);
       } else {
         currentTurn = currentTurn === "X" ? "O" : "X";
         io.emit("update", { board, currentTurn, scores });
@@ -142,6 +87,7 @@ socket.on("update", ({ board, currentTurn, winner, scores: newScores }) => {
     }
   });
 
+  // Reiniciar placar/tabuleiro (pode ser chamado por frontend)
   socket.on("reset", () => {
     board = Array(9).fill(null);
     currentTurn = "X";
@@ -150,7 +96,9 @@ socket.on("update", ({ board, currentTurn, winner, scores: newScores }) => {
   });
 
   socket.on("disconnect", () => {
+    console.log("Usuário saiu:", socket.id);
     delete players[socket.id];
+    // opcional: resetar board ao desconectar (mantive para evitar estados estranhos)
     board = Array(9).fill(null);
     currentTurn = "X";
     io.emit("updatePlayers", players);
@@ -162,5 +110,3 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("Servidor rodando na porta " + PORT);
 });
-
-
