@@ -10,13 +10,10 @@ const resetBtn = document.getElementById("resetBtn");
 const playerList = document.getElementById("playerList");
 const nameInput = document.getElementById("nameInput");
 const joinBtn = document.getElementById("joinBtn");
-const toggleSidebarBtn = document.getElementById("toggleSidebarBtn");
-const sidebar = document.getElementById("sidebar");
 
 let winLine = null;
-let sidebarVisible = true;
 
-// criar 9 células
+// criar 9 células (mantém quadradas via CSS aspect-ratio)
 function createBoardCells(){
   boardDiv.innerHTML = "";
   for(let i=0;i<9;i++){
@@ -32,35 +29,11 @@ function createBoardCells(){
 }
 createBoardCells();
 
-// toggle sidebar (mobile)
-function setSidebarVisible(v){
-  sidebarVisible = !!v;
-  sidebar.setAttribute("aria-hidden", sidebarVisible ? "false" : "true");
-  // small UX: change button label
-  toggleSidebarBtn.innerText = sidebarVisible ? "✕" : "☰";
-}
-toggleSidebarBtn.addEventListener("click", () => {
-  // invert visibility on small screens
-  setSidebarVisible(!sidebarVisible);
-});
-
-// ensure sidebar initial visibility for small screens
-function adaptSidebarByWidth(){
-  if (window.innerWidth <= 980) {
-    setSidebarVisible(false);
-  } else {
-    setSidebarVisible(true);
-  }
-}
-adaptSidebarByWidth();
-window.addEventListener("resize", adaptSidebarByWidth);
-
 // join com nome
 joinBtn.addEventListener("click", () => {
   const name = nameInput.value.trim();
   if (!name) return alert("Digite seu nome");
   socket.emit("setName", name);
-  // ocultar campo de login após entrar
   document.getElementById("login").style.display = "none";
 });
 
@@ -141,8 +114,8 @@ socket.on("update", (payload) => {
     } else {
       status.innerText = `Jogador ${payload.winner.player} venceu!`;
       if (payload.winner.combo) {
-        // esperar 60ms para garantir que layout mobile já posicionou as células
-        setTimeout(() => drawWinLine(payload.winner.combo), 60);
+        // esperar um pouquinho para garantir layout (mobile)
+        setTimeout(() => drawWinLine(payload.winner.combo), 50);
       }
     }
   } else {
