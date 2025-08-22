@@ -11,6 +11,8 @@ const playerList = document.getElementById("playerList");
 const nameInput = document.getElementById("nameInput");
 const joinBtn = document.getElementById("joinBtn");
 
+let winLine = null;
+
 // criar 9 células
 function createBoardCells(){
   boardDiv.innerHTML = "";
@@ -23,6 +25,7 @@ function createBoardCells(){
     });
     boardDiv.appendChild(cell);
   }
+  clearWinLine();
 }
 createBoardCells();
 
@@ -38,9 +41,45 @@ joinBtn.addEventListener("click", () => {
 // reset
 resetBtn.addEventListener("click", () => socket.emit("reset"));
 
+// desenha linha sobre a combinação vencedora (combo = [a,b,c])
+function drawWinLine(combo){
+  clearWinLine();
+  if (!combo || combo.length < 3) return;
+
+  // garante que células existam
+  const cells = [...document.querySelectorAll(".cell")];
+  if (!cells || cells.length < 9) return;
+
+  const rect = boardDiv.getBoundingClientRect();
+  const first = cells[combo[0]].getBoundingClientRect();
+  const last = cells[combo[2]].getBoundingClientRect();
+
+  // posição relativa ao boardDiv
+  const x1 = first.left + first.width/2 - rect.left;
+  const y1 = first.top + first.height/2 - rect.top;
+  const x2 = last.left + last.width/2 - rect.left;
+  const y2 = last.top + last.height/2 - rect.top;
+
+  const length = Math.hypot(x2 - x1, y2 - y1);
+  const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+  const line = document.createElement("div");
+  line.className = "win-line";
+  line.style.width = length + "px";
+  line.style.transform = `translate(${x1}px, ${y1}px) rotate(${angle}deg)`;
+  boardDiv.appendChild(line);
+  winLine = line;
+}
+
+function clearWinLine(){
+  if (winLine) {
+    winLine.remove();
+    winLine = null;
+  }
+}
+
 // receber confirmação de jogador (ativo)
 socket.on("player", (payload) => {
-  // payload pode ser { symbol, name } ou apenas symbol — nosso servidor envia {symbol, name}
   mySymbol = payload.symbol ?? payload;
   playersTxt.innerText = `Você é ${payload.name ? payload.name + " ("+mySymbol+")" : mySymbol}`;
 });
@@ -74,11 +113,20 @@ socket.on("update", (payload) => {
   if (payload.winner) {
     if (payload.winner === "draw") {
       status.innerText = "Empate!";
+      clearWinLine();
     } else {
+      // payload.winner is an object { player, combo }
       status.innerText = `Jogador ${payload.winner.player} venceu!`;
+      if (payload.winner.combo) {
+        // desenhar a linha sobre as células vencedoras
+        // usa a combo (índices) que o servidor enviou
+        drawWinLine(payload.winner.combo);
+      }
     }
   } else {
     status.innerText = `Vez do jogador ${payload.currentTurn || "?"}`;
+    // se não houve vencedor nesta atualização, remover linha caso exista
+    clearWinLine();
   }
 });
 
