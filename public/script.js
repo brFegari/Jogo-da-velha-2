@@ -10,8 +10,11 @@ const resetBtn = document.getElementById("resetBtn");
 const playerList = document.getElementById("playerList");
 const nameInput = document.getElementById("nameInput");
 const joinBtn = document.getElementById("joinBtn");
+const toggleSidebarBtn = document.getElementById("toggleSidebarBtn");
+const sidebar = document.getElementById("sidebar");
 
 let winLine = null;
+let sidebarVisible = true;
 
 // criar 9 células
 function createBoardCells(){
@@ -28,6 +31,29 @@ function createBoardCells(){
   clearWinLine();
 }
 createBoardCells();
+
+// toggle sidebar (mobile)
+function setSidebarVisible(v){
+  sidebarVisible = !!v;
+  sidebar.setAttribute("aria-hidden", sidebarVisible ? "false" : "true");
+  // small UX: change button label
+  toggleSidebarBtn.innerText = sidebarVisible ? "✕" : "☰";
+}
+toggleSidebarBtn.addEventListener("click", () => {
+  // invert visibility on small screens
+  setSidebarVisible(!sidebarVisible);
+});
+
+// ensure sidebar initial visibility for small screens
+function adaptSidebarByWidth(){
+  if (window.innerWidth <= 980) {
+    setSidebarVisible(false);
+  } else {
+    setSidebarVisible(true);
+  }
+}
+adaptSidebarByWidth();
+window.addEventListener("resize", adaptSidebarByWidth);
 
 // join com nome
 joinBtn.addEventListener("click", () => {
@@ -46,7 +72,6 @@ function drawWinLine(combo){
   clearWinLine();
   if (!combo || combo.length < 3) return;
 
-  // garante que células existam
   const cells = [...document.querySelectorAll(".cell")];
   if (!cells || cells.length < 9) return;
 
@@ -101,7 +126,6 @@ socket.on("updatePlayers", (players) => {
 
 // atualização do jogo
 socket.on("update", (payload) => {
-  // payload: { board, currentTurn, winner?, scores? }
   const board = payload.board || Array(9).fill(null);
   document.querySelectorAll(".cell").forEach((c, i) => c.innerText = board[i] || "");
 
@@ -115,17 +139,14 @@ socket.on("update", (payload) => {
       status.innerText = "Empate!";
       clearWinLine();
     } else {
-      // payload.winner is an object { player, combo }
       status.innerText = `Jogador ${payload.winner.player} venceu!`;
       if (payload.winner.combo) {
-        // desenhar a linha sobre as células vencedoras
-        // usa a combo (índices) que o servidor enviou
-        drawWinLine(payload.winner.combo);
+        // esperar 60ms para garantir que layout mobile já posicionou as células
+        setTimeout(() => drawWinLine(payload.winner.combo), 60);
       }
     }
   } else {
     status.innerText = `Vez do jogador ${payload.currentTurn || "?"}`;
-    // se não houve vencedor nesta atualização, remover linha caso exista
     clearWinLine();
   }
 });
