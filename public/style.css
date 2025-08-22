@@ -3,7 +3,7 @@
   --accent: #ff9800;
   --muted: rgba(255,255,255,0.85);
   --card-pad: 14px;
-  --sidebar-bg: rgba(0,0,0,0.12);
+  --sidebar-bg: rgba(7,10,20,0.94); /* escuro e quase opaco para evitar vazamento do gradiente */
   --panel-bg: rgba(255,255,255,0.03);
   --panel-border: rgba(255,255,255,0.06);
 }
@@ -52,9 +52,14 @@ body{
 }
 
 /* sidebar */
+/* Substitua somente a regra .sidebar existente por esta: */
 .sidebar{
   width:260px;
-  background: var(--sidebar-bg);
+  /* fundo escuro opaco + leve gradiente vertical para profundidade */
+  background: linear-gradient(180deg, rgba(10,14,28,0.96), rgba(12,18,36,0.92));
+  /* opcional: blur de fundo para quem suportar (mantém o feeling glass sem mostrar o roxo) */
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   border-radius:12px;
   padding:var(--card-pad);
   display:flex;
@@ -62,8 +67,9 @@ body{
   gap:12px;
   max-height:70vh;
   overflow:auto;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+  border: 1px solid rgba(255,255,255,0.04);
+  z-index: 10; /* garante sobre o fundo */
 }
 
 /* dar contraste aos blocos dentro do histórico */
@@ -196,3 +202,4 @@ body{
 /* evitar que a sidebar flutue sobre o board (z-index) */
 .board, .game-area { z-index: 1 }
 .sidebar { z-index: 2 }
+
