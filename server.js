@@ -1,6 +1,4 @@
 // server.js — servidor Node + Socket.IO (BACKEND)
-// Cole este conteúdo inteiro no seu arquivo server.js (substitua o que houver lá).
-
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -16,7 +14,8 @@ const io = new Server(server);
 
 let board = Array(9).fill(null);
 let players = {}; // { socketId: { name, symbol } }
-let currentTurn = "X";
+let startingSymbol = "X"; // Quem começa nesta partida (vai alternar)
+let currentTurn = startingSymbol;
 let scores = { X: 0, O: 0, draw: 0 };
 
 io.on("connection", (socket) => {
@@ -24,12 +23,14 @@ io.on("connection", (socket) => {
 
   // Cliente envia nome para entrar (player ou espectador)
   socket.on("setName", (name) => {
-    // número de players com símbolo não-nulo
     const activeCount = Object.values(players).filter(p => p.symbol).length;
 
     if (activeCount < 2) {
       const used = Object.values(players).map(p => p.symbol);
-      const symbol = !used.includes("X") ? "X" : "O";
+      // Se não houver símbolo usado, atribui símbolo baseado na disponibilidade.
+      // OBS: a ordem de atribuição é independente do startingSymbol — o startingSymbol
+      // define quem começa, não necessariamente quem é X ou O.
+      let symbol = !used.includes("X") ? "X" : "O";
       players[socket.id] = { name, symbol };
       socket.emit("player", { symbol, name });
       console.log(`Atribuído ${symbol} a ${name}`);
@@ -40,6 +41,7 @@ io.on("connection", (socket) => {
     }
 
     io.emit("updatePlayers", players);
+    // garante que o client saiba qual é o turno atual e placares
     socket.emit("update", { board, currentTurn, scores });
   });
 
@@ -73,11 +75,16 @@ io.on("connection", (socket) => {
       }
 
       if (winner) {
+        // Notifica o resultado atual
         io.emit("update", { board, currentTurn, winner, scores });
-        // reinicia board após 1.8s (visual)
+
+        // Alterna quem começa na próxima partida
+        startingSymbol = startingSymbol === "X" ? "O" : "X";
+
+        // Reinicia o tabuleiro após um breve delay e define o turno inicial
         setTimeout(() => {
           board = Array(9).fill(null);
-          currentTurn = "X";
+          currentTurn = startingSymbol;
           io.emit("update", { board, currentTurn, scores });
         }, 1800);
       } else {
@@ -90,17 +97,18 @@ io.on("connection", (socket) => {
   // Reiniciar placar/tabuleiro (pode ser chamado por frontend)
   socket.on("reset", () => {
     board = Array(9).fill(null);
-    currentTurn = "X";
+    // zera o placar e mantém startingSymbol como está (não alterna aqui)
     scores = { X: 0, O: 0, draw: 0 };
+    currentTurn = startingSymbol;
     io.emit("update", { board, currentTurn, scores });
   });
 
   socket.on("disconnect", () => {
     console.log("Usuário saiu:", socket.id);
     delete players[socket.id];
-    // opcional: resetar board ao desconectar (mantive para evitar estados estranhos)
+    // Opcional: resetar o tabuleiro para evitar estados quebrados (mantive)
     board = Array(9).fill(null);
-    currentTurn = "X";
+    currentTurn = startingSymbol;
     io.emit("updatePlayers", players);
     io.emit("update", { board, currentTurn, scores });
   });
