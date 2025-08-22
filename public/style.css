@@ -92,6 +92,24 @@ body{
 .players-list{list-style:none;color:var(--muted);padding-left:0}
 .footer{text-align:center;margin-top:18px;opacity:0.9}
 
+/* garante que a linha possa ser posicionada relativo ao board */
+.board {
+  position: relative;
+}
+
+/* linha que aparece sobre a trinca vencedora */
+.win-line {
+  position: absolute;
+  height: 6px;
+  background: #ffeb3b;
+  border-radius: 4px;
+  transform-origin: left center;
+  z-index: 40;
+  pointer-events: none; /* não atrapalha cliques */
+  box-shadow: 0 0 10px rgba(255,235,59,0.6);
+}
+
+
 /* responsiveness */
 @media(max-width:980px){
   .center-area{flex-direction:column;align-items:center}
@@ -99,3 +117,4 @@ body{
   .board{grid-template-columns:repeat(3, 88px);grid-auto-rows:88px;gap:10px}
   .cell{font-size:2.1rem}
 }
+
