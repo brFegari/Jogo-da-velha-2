@@ -3,6 +3,9 @@
   --accent: #ff9800;
   --muted: rgba(255,255,255,0.85);
   --card-pad: 14px;
+  --sidebar-bg: rgba(0,0,0,0.12);
+  --panel-bg: rgba(255,255,255,0.03);
+  --panel-border: rgba(255,255,255,0.06);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -37,19 +40,21 @@ body{
   flex: 1 1 640px;
   min-width: 300px;
   max-width: 720px;
-  background: rgba(0,0,0,0.08);
+  background: rgba(0,0,0,0.06);
   border-radius:12px;
   padding:var(--card-pad);
   display:flex;
   flex-direction:column;
   align-items:center;
   gap:12px;
+  /* evita que a área do jogo cresça verticalmente de forma estranha */
+  align-self:flex-start;
 }
 
 /* sidebar */
 .sidebar{
   width:260px;
-  background: rgba(0,0,0,0.08);
+  background: var(--sidebar-bg);
   border-radius:12px;
   padding:var(--card-pad);
   display:flex;
@@ -57,6 +62,45 @@ body{
   gap:12px;
   max-height:70vh;
   overflow:auto;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* dar contraste aos blocos dentro do histórico */
+.scores{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.scores > div{
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  padding:8px 10px;
+  border-radius:8px;
+  color:var(--muted);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-weight:600;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.15) inset;
+}
+
+/* separar lista de jogadores também */
+.players-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  list-style:none;
+  padding-left:0;
+  margin:0;
+}
+.players-list li{
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  padding:8px 10px;
+  border-radius:8px;
+  color:var(--muted);
+  font-size:0.95rem;
 }
 
 /* login row */
@@ -70,29 +114,31 @@ body{
 .info-row{display:flex;gap:12px;justify-content:center;width:100%;color:var(--muted)}
 
 /* board */
-/* crucial: board width controlled and each cell has aspect-ratio 1/1 to stay square */
+/* Uso de width controlado + aspect-ratio nas células garante que não estique */
 .board{
   position:relative;
   display:grid;
   grid-template-columns:repeat(3, 1fr);
-  gap:12px;
-  width: min(92vw, 420px); /* adapts: up to 420px on desktop, fits mobile */
+  gap:10px;
+  /* largura adaptável: ocupa a maior parte da tela no mobile, mas não estica demais */
+  width: clamp(260px, 84vw, 420px);
   margin-top:6px;
   padding:8px;
   touch-action: manipulation;
+  align-self:center;
 }
 .cell{
   width:100%;
-  aspect-ratio: 1 / 1; /* garante células quadradas */
+  aspect-ratio: 1 / 1; /* células sempre quadradas */
   border-radius:12px;
-  background:rgba(255,255,255,0.04);
+  background:rgba(255,255,255,0.03);
   display:flex;align-items:center;justify-content:center;
-  font-size:clamp(1.6rem, 8vw, 3.2rem);
-  font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.08);
+  font-size:clamp(1.6rem, 6.5vw, 3.2rem);
+  font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.06);
   transition:transform .12s, background .12s;
   user-select:none;
 }
-.cell:hover{transform:translateY(-6px);background:rgba(255,255,255,0.10)}
+.cell:hover{transform:translateY(-4px);background:rgba(255,255,255,0.08)}
 
 /* win-line style (absolute inside board) */
 .win-line {
@@ -108,24 +154,45 @@ body{
 
 /* buttons / misc */
 .btn{padding:10px;border-radius:8px;border:none;background:var(--accent);color:#fff;cursor:pointer}
-.scores{display:flex;flex-direction:column;gap:8px;color:var(--muted)}
-.players-list{list-style:none;color:var(--muted);padding-left:0}
 .footer{text-align:center;margin-top:18px;opacity:0.9}
 
-/* mobile responsiveness */
-/* On small screens we stack: game area first, then sidebar under it (so history is always visible, no toggle) */
-@media(max-width:900px){
-  .center-area{flex-direction:column;align-items:center}
-  .sidebar{width:100%;max-width:520px}
-  .board{width: min(92vw, 360px); gap:10px}
-  .cell{font-size:clamp(1.4rem, 10vw, 2.4rem)}
+/* mobile responsiveness: empilha e garante leitura confortável */
+@media (max-width: 900px) {
+  .center-area{
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .sidebar{
+    width:100%;
+    max-width:680px;
+  }
+  /* board menor para telefones, sem perdas de legibilidade */
+  .board{
+    width: min(92vw, 360px);
+    gap:8px;
+  }
+  .cell{
+    font-size:clamp(1.4rem, 9.5vw, 2.6rem);
+    border-radius:10px;
+  }
+  /* sidebar itens com maior espaçamento vertical para toque */
+  .players-list li, .scores > div {
+    padding:10px 12px;
+  }
 }
 
-/* very small phones */
-@media(max-width:420px){
-  body{padding:12px}
-  .login-row input{max-width:150px;font-size:0.95rem}
-  .login-row button{padding:8px 10px}
-  .topbar h1{font-size:1.2rem}
-  .board{width: min(90vw, 320px)}
+/* telefones bem pequenos */
+@media (max-width: 420px){
+  .board{width: min(90vw, 320px); gap:7px}
+  .cell{font-size:clamp(1.2rem, 10vw, 2.2rem)}
+  .login-row input{max-width:160px}
+  .sidebar{padding:12px}
 }
+
+/* small polish: garantir contraste entre board e sidebar */
+.game-area, .sidebar { background-clip: padding-box; }
+
+/* evitar que a sidebar flutue sobre o board (z-index) */
+.board, .game-area { z-index: 1 }
+.sidebar { z-index: 2 }
