@@ -3,7 +3,7 @@
   --accent: #ff9800;
   --muted: rgba(255,255,255,0.85);
   --card-pad: 14px;
-  --sidebar-bg: rgba(7,10,20,0.94); /* escuro e quase opaco para evitar vazamento do gradiente */
+  --sidebar-bg: rgba(76, 27, 122, 0.94); /* escuro e quase opaco para evitar vazamento do gradiente */
   --panel-bg: rgba(255,255,255,0.03);
   --panel-border: rgba(255,255,255,0.06);
 }
@@ -202,4 +202,5 @@ body{
 /* evitar que a sidebar flutue sobre o board (z-index) */
 .board, .game-area { z-index: 1 }
 .sidebar { z-index: 2 }
+
 
