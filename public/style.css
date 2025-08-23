@@ -195,6 +195,26 @@ body{
   .login-row input{max-width:160px}
   .sidebar{padding:12px}
 }
+@media (max-width: 900px) {
+  /* Impedir que .game-area cresça verticalmente no mobile */
+  .game-area {
+    flex: 0 0 auto;        /* não cresce, não encolhe automaticamente */
+    width: 100%;           /* ocupa a largura disponível (com max-width já aplicado) */
+    max-width: 720px;
+    align-self: stretch;   /* estica horizontalmente, mas não verticalmente */
+    /* opcional: limite de altura e rolagem interna caso haja conteúdo demais */
+    max-height: calc(100vh - 160px); /* ajustar conforme header/footer */
+    overflow-y: auto;      /* permite rolar o conteúdo interno */
+  }
+
+  /* garantir que a centralização fique correta */
+  .center-area {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  }
+}
 
 /* small polish: garantir contraste entre board e sidebar */
 .game-area, .sidebar { background-clip: padding-box; }
@@ -202,5 +222,6 @@ body{
 /* evitar que a sidebar flutue sobre o board (z-index) */
 .board, .game-area { z-index: 1 }
 .sidebar { z-index: 2 }
+
 
 
